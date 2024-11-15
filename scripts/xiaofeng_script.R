@@ -37,7 +37,7 @@ parse_data <- function(.df){
 
 load("./data/claims-raw.RData")
 claims_raw$text_clean <- NA
-for (i in nrow(claims_raw)) {
-  claims_raw$text_clean[i] <- parse_fn(claims_raw$original_url[1])
+for (i in 1:nrow(claims_raw)) { 
+  claims_raw$text_clean[i] <- parse_fn(claims_raw$original_url[i])
 }
 
