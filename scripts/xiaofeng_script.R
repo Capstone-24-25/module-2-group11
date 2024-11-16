@@ -119,3 +119,16 @@ pred_bin_test <- ifelse(pred_test > 0.5, 1, 0)
 conf_matrix_test <- table(Predicted = pred_bin_test, Actual = X_test_pca$bclass)
 auc_test <- roc(X_test_pca$bclass, pred_test, levels = c(0, 1), direction = "<")$auc
 
+
+#### without PCA
+X_train_tfidf_no_pca <- train_data %>% 
+  select(-c(.id, bclass)) %>% 
+  as.matrix() %>% 
+  na.omit()
+X_test_tfidf_no_pca <- test_data %>% 
+  select(-c(.id, bclass)) %>% 
+  as.matrix() %>% 
+  na.omit()
+
+#### issue here, how to compare with the non pca model, the dataset is huge, can't run### 
+model_no_pca <- glm(bclass ~ ., data = as.data.frame(X_train_tfidf_no_pca), family = binomial)
