@@ -1,0 +1,281 @@
+---
+title: "Homework 2"
+author: "PSTAT 134/234"
+format: pdf
+editor: visual
+---
+
+[Names of Collaborators (if any):]{.underline} Sophie Shi
+
+## Homework 2
+
+### Part One: Analyzing the Weather
+
+In this section, you will gain more practice working with public APIs, this time using a public weather API, [WeatherAPI](https://www.weatherapi.com/). The first thing you'll need to access the API is an API key. You can sign up for a key here: <https://www.weatherapi.com/signup.aspx>
+
+#### Exercise 1
+
+Use the <http://api.weatherapi.com/v1/current.json> URL to access the API and obtain real-time weather data. Note that you will want to specify three query parameters, at least -- `key`, which should be set to your individual API key, `q`, which should equal the city name of a specified location -- for example `q = "Isla Vista"` -- and `aqi`, which indicates whether you want to obtain air quality data (`"yes"` or `"no"`).
+
+Obtain current real-time weather data for **fifty randomly-selected cities**. I have saved a data file containing the names of fifty cities to `/data/cities.csv`. This ensures that you are all working with the same locations (although your results will still differ, depending on when you obtain the data).
+
+```{r}
+library(tidyverse)
+library(jsonlite)
+library(httr)
+
+cities <- read.csv("./data/cities.csv")
+
+data <- list()
+for(i in 1:50){
+  l <- list(
+    key = "9d229f421fc6437a9ab00002242210",
+    q = cities$names[i],
+    aqi = "yes"
+  )
+  res = GET("http://api.weatherapi.com/v1/current.json", query = l)
+  
+  con <- fromJSON(rawToChar(res$content))
+  
+  data[[i]] <- con
+}
+```
+
+#### Exercise 2
+
+Write code in R or Python (your choice) to extract and store the following data for each location:
+
+-   City name
+
+-   Country
+
+-   Whether or not it is currently daytime there
+
+-   Temperature (in Fahrenheit)
+
+-   Humidity
+
+-   Weather description (`condition` text; for example, "Mist", "Clear", etc.)
+
+-   Wind speed (in miles per hour)
+
+-   Precipitation (in millimeters)
+
+-   US EPA air quality index (ranges from $1$ to $6$, representing the 6 categories of air quality: <https://www.airnow.gov/aqi/aqi-basics/>)
+
+```{r}
+complete_data <- list()
+
+for(i in 1:50){
+  l <- list(
+    key = "9d229f421fc6437a9ab00002242210",
+    q = cities$names[i],
+    aqi = "yes"
+  )
+  res = GET("http://api.weatherapi.com/v1/current.json", query = l)
+  
+  con <- fromJSON(rawToChar(res$content))
+  
+  weather_data <- tibble(
+    city = con$location$name,
+    country = con$location$country,
+    is_daytime = con$current$is_day == 1,
+    temperature_f = con$current$temp_f,
+    humidity = con$current$humidity,
+    weather_desc = con$current$condition$text,
+    wind_speed_mph = con$current$wind_mph,
+    precipitation_mm = con$current$precip_mm,
+    air_quality_us_epa = con$current$air_quality$`us-epa-index`
+  )
+  complete_data[[i]] <- weather_data
+}
+complete_df <- bind_rows(complete_data)
+complete_df
+```
+
+#### Exercise 3
+
+Create a scatterplot of temperature vs. humidity. Add a linear regression line to the plot. What are the estimated intercept and slope values for this linear regression? Does there appear to be a significant relationship between temperature and humidity?
+
+```{r}
+ggplot(complete_df, aes(x = temperature_f, y = humidity)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = F) +
+  labs(title = "Temperature vs Humidity",
+       x = "Temperature (F)",
+       y = "Humidity (%)") +
+  theme_minimal()
+
+model <- lm(temperature_f ~ humidity, data = complete_df)
+summary(model)
+```
+
+The estimated y-intercept is 80% humidity, and the slope is approximately (79-70)/(40-80) = -0.0.225.The p-value indicates there is no significant relationship between temperature and humidity.
+
+#### Exercise 4
+
+Create a bar chart of the EPA air quality index values. What does the distribution of air quality look like? Identify the location(s) with the best air quality and the worst air quality.
+
+```{r}
+ggplot(complete_df, aes(x = factor(air_quality_us_epa))) +
+  geom_bar() +
+  labs(
+    title = "Distribution of the US EPA Air Quality Index",
+    x = "US EPA Air Quality Index",
+    y = "Count") +
+  theme_minimal()
+
+best_aqi <- complete_df %>% filter(air_quality_us_epa == max(air_quality_us_epa))
+print(best_aqi$city) 
+worst_aqi <- complete_df %>% filter(air_quality_us_epa == min(air_quality_us_epa))
+print(worst_aqi$city)
+```
+
+Most the US EPA Air Quality Index has a index number 2.
+
+#### Exercise 5
+
+Create a bar chart of the current weather description. Which conditions are the most common? Which are the least?
+
+```{r}
+ggplot(complete_df, aes(x = weather_desc)) +
+  geom_bar() +
+  labs(
+    title = "Distribution of Current Weather Conditions",
+    x = "Weather Description",
+    y = "Count") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
+
+weather_counts <- complete_df %>%
+  group_by(weather_desc) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) 
+
+max <- weather_counts %>% select(count) %>% max()
+
+max_con <- weather_counts %>%
+  filter(count == max)
+
+min <- weather_counts %>% select(count) %>% min()
+
+min_con <- weather_counts %>%
+  filter(count == min)
+
+print(paste("The most common weather condition: ", max_con$weather_desc))
+print(paste("The least common weather condition: ", paste(min_con$weather_desc, collapse = ", ")))
+```
+
+#### Exercises for 234 Students
+
+##### Exercise 6
+
+Do you think day vs. night cycles cause a significant difference in temperature? Test this hypothesis using a *t*-test.
+
+##### Exercise 7
+
+Create a table of the average temperature, humidity, wind speed, and precipitation broken down by weather description.
+
+##### Exercise 8
+
+Learn how to use the forecast API (<http://api.weatherapi.com/v1/forecast.json>).
+
+Determine the chance of rain (in percentage) for Goleta, California tomorrow. *(Note that "tomorrow" may vary depending on when you do this assignment; that is fine.)*
+
+Based on the percentage you obtained, do you think it will rain in Goleta tomorrow?
+
+### Part Two: Scraping Books
+
+In this section, you'll practice your web scraping skills by experimenting with a fictional online bookstore located at <https://books.toscrape.com/>. Use the tools that we demonstrate in class to do the following, in either R or Python (your choice):
+
+#### Exercise 9
+
+Scrape the first 20 results from this site. Create a data frame (or tibble) that stores the following for each book:
+
+-   Title
+
+-   Price (excluding tax)
+
+-   Star rating
+
+-   Whether the book is in stock
+
+```{r}
+library(rvest)
+# html <- read_html('https://books.toscrape.com/')
+# write_html(html, file = "hw2.html")
+html <- read_html(x = "hw2.html")
+
+title <- html %>%
+  html_elements('a') %>%
+  html_attr("title") %>%
+  na.omit() %>% 
+  as.vector()
+
+price <- html %>% 
+  html_elements('p.price_color') %>%
+  html_text() %>%
+  str_remove("£") %>% 
+  as.numeric()
+
+star_rating <- html %>% 
+  html_elements('p.star-rating') %>% 
+  html_attr("class")
+
+stock <- html %>% 
+  html_elements('p.instock.availability') %>% 
+  html_text(trim = T)
+
+book_20 <- data.frame(title, price, star_rating, stock)
+book_20
+```
+
+#### Exercise 10
+
+Create a histogram of prices for these 20 books. What is the average price?
+
+```{r}
+library(ggplot2)
+
+ggplot(book_20, aes(x = price)) + 
+  geom_histogram(bins = 7) + 
+  labs(title = "Histogram of Book Prices") + 
+  theme_minimal() 
+
+avg_price <- mean(book_20$price)
+print(paste("The average price is", avg_price))
+```
+
+#### Exercise 11
+
+Create a bar chart of star rating for these 20 books. Find the book(s) with the highest and lowest star ratings.
+
+```{r}
+ggplot(book_20, aes(x = star_rating)) + 
+  geom_bar() + 
+  labs(title = "Bar Chart of Book Star Ratings") + 
+  theme_minimal()
+
+high_ratings <- book_20 %>% 
+  filter(star_rating == 'star-rating Five') %>% 
+  select(title, star_rating)
+high_ratings
+low_ratings <- book_20 %>% 
+  filter(star_rating == 'star-rating One') %>% 
+  select(title, star_rating)
+low_ratings
+```
+
+Books "Sapiens: A Brief History of Humankind", "Set Me Free", "Scott Pilgrim's Precious Little Life (Scott Pilgrim #1)", "Rip it Up and Start Again" have the highest star rtings. Books "Tipping the Velvet", "Soumission", "The Requiem Red", "The Black Maria", "Olio", "Mesaerion: The Best Science Fiction Stories 1800-1849" have the lowest star ratings.
+
+#### Exercises for 234 Students
+
+##### Exercise 12
+
+Extend your skills; instead of scraping only the first 20 books, scrape the first **two hundred books**.
+
+For each book, in addition to the information we stored previously (title, price, star rating, etc.), figure out how to extract the **category** (i.e., Travel, Mystery, Classics, etc.).
+
+##### Exercise 13
+
+What is the most common category? What is the least common?
