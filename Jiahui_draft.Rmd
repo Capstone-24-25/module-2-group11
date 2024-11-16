@@ -1,0 +1,200 @@
+---
+title: "Jiahuihe_draft"
+output: html_document
+date: "2024-11-16"
+---
+
+```{r}
+require(tidyverse)
+require(tidytext)
+require(textstem)
+require(rvest)
+require(qdapRegex)
+require(stopwords)
+require(tokenizers)
+library(pROC)
+library(stopwords)
+
+# function to parse html and clean text
+parse_fn <- function(.html){
+  read_html(.html) %>%
+    html_elements('h1, h2, h3, h4, h5, h6, p') %>%
+    html_text2() %>%
+    str_c(collapse = ' ') %>%
+    rm_url() %>%
+    rm_email() %>%
+    str_remove_all('\'') %>%
+    str_replace_all(paste(c('\n', 
+                            '[[:punct:]]', 
+                            'nbsp', 
+                            '[[:digit:]]', 
+                            '[[:symbol:]]'),
+                          collapse = '|'), ' ') %>%
+    str_replace_all("([a-z])([A-Z])", "\\1 \\2") %>%
+    tolower() %>%
+    str_replace_all("\\s+", " ")
+}
+
+# function to apply to claims data
+parse_data <- function(.df){
+  out <- .df %>%
+    filter(str_detect(text_tmp, '<!')) %>%
+    rowwise() %>%
+    mutate(text_clean = parse_fn(text_tmp)) %>%
+    unnest(text_clean) 
+  return(out)
+}
+
+nlp_fn <- function(parse_data.out){
+  out <- parse_data.out %>% 
+    unnest_tokens(output = token, 
+                  input = text_clean, 
+                  token = 'words',
+                  stopwords = str_remove_all(stop_words$word, 
+                                             '[[:punct:]]')) %>%
+    mutate(token.lem = lemmatize_words(token)) %>%
+    filter(str_length(token.lem) > 2) %>%
+    count(.id, bclass, token.lem, name = 'n') %>%
+    bind_tf_idf(term = token.lem, 
+                document = .id,
+                n = n) %>%
+    pivot_wider(id_cols = c('.id', 'bclass'),
+                names_from = 'token.lem',
+                values_from = 'tf_idf',
+                values_fill = 0)
+  return(out)
+}
+
+load("./data/claims-raw.RData")
+
+claims_clean <- claims_raw %>%
+  parse_data()
+```
+
+```{r}
+# Apply NLP preprocessing for unigrams
+claims_processed <- nlp_fn(claims_clean)
+
+# Extract features and labels
+features <- claims_processed %>% select(-.id, -bclass)
+labels <- claims_processed$bclass
+```
+
+
+```{r}
+# Standardize the features
+features_scaled <- scale(as.matrix(features))
+
+# Perform PCA
+pca <- prcomp(features_scaled, center = TRUE, scale. = TRUE)
+
+# Choose components explaining >= 90% variance
+explained_variance <- summary(pca)$importance[2, ]
+cumulative_variance <- cumsum(explained_variance)
+num_components <- which(cumulative_variance >= 0.90)[1]
+cat("Number of components explaining >= 90% variance:", num_components, "\n")
+
+# Select top components
+X_pca <- data.frame(pca$x[, 1:num_components])
+X_pca <- cbind(X_pca, bclass = labels)
+```
+
+```{r}
+# Train-test split
+set.seed(123)
+train_idx <- createDataPartition(X_pca$bclass, p = 0.8, list = FALSE)
+train_data <- X_pca[train_idx, ]
+test_data <- X_pca[-train_idx, ]
+
+# Train logistic regression
+logistic_model <- glm(bclass ~ ., data = train_data, family = binomial)
+
+# Predict on test data
+pred <- predict(logistic_model, test_data, type = "response")
+pred_bin <- ifelse(pred > 0.5, 1, 0)
+```
+
+```{r}
+# Confusion matrix
+conf_matrix <- table(Predicted = pred_bin, Actual = test_data$bclass)
+cat("Confusion Matrix:\n")
+print(conf_matrix)
+
+# Calculate AUC
+auc <- roc(test_data$bclass, pred)$auc
+cat("AUC for Question 1:", auc, "\n")
+```
+
+
+# 2
+```{r}
+# Define NLP function for bigrams
+nlp_fn_bigrams <- function(parse_data.out) {
+  parse_data.out %>%
+    unnest_tokens(output = bigram, input = text_clean, token = 'ngrams', n = 2) %>%
+    count(.id, bclass, bigram, name = 'n') %>%
+    bind_tf_idf(term = bigram, document = .id, n = n) %>%
+    pivot_wider(id_cols = c('.id', 'bclass'),
+                names_from = 'bigram',
+                values_from = 'tf_idf',
+                values_fill = 0)
+}
+
+# Apply NLP preprocessing for bigrams
+claims_processed_bigrams <- nlp_fn_bigrams(claims_clean)
+```
+
+
+
+```{r}
+# Extract features and standardize
+features_bigrams <- claims_processed_bigrams %>% select(-.id, -bclass)
+features_scaled_bigrams <- scale(as.matrix(features_bigrams))
+
+# Perform PCA
+pca_bigrams <- prcomp(features_scaled_bigrams, center = TRUE, scale. = TRUE)
+
+# Choose components explaining >= 90% variance
+explained_variance_bigrams <- summary(pca_bigrams)$importance[2, ]
+cumulative_variance_bigrams <- cumsum(explained_variance_bigrams)
+num_components_bigrams <- which(cumulative_variance_bigrams >= 0.90)[1]
+cat("Number of bigram components explaining >= 90% variance:", num_components_bigrams, "\n")
+
+# Select top components
+X_pca_bigrams <- data.frame(pca_bigrams$x[, 1:num_components_bigrams])
+X_pca_bigrams <- cbind(X_pca_bigrams, bclass = claims_processed_bigrams$bclass)
+```
+
+```{r}
+# Train unigram model and get log-odds
+train_idx_unigrams <- createDataPartition(X_pca$bclass, p = 0.8, list = FALSE)
+train_data_unigrams <- X_pca[train_idx_unigrams, ]
+test_data_unigrams <- X_pca[-train_idx_unigrams, ]
+logistic_model_unigrams <- glm(bclass ~ ., data = train_data_unigrams, family = binomial)
+log_odds_unigrams <- predict(logistic_model_unigrams, newdata = test_data_unigrams, type = "link")
+
+# Combine unigram log-odds with bigram PCA components
+train_data_combined <- X_pca_bigrams[train_idx_unigrams, ] %>%
+  mutate(log_odds_unigrams = log_odds_unigrams[train_idx_unigrams])
+test_data_combined <- X_pca_bigrams[-train_idx_unigrams, ] %>%
+  mutate(log_odds_unigrams = log_odds_unigrams[-train_idx_unigrams])
+```
+
+```{r}
+# Train logistic regression with combined features
+combined_model <- glm(bclass ~ ., data = train_data_combined, family = binomial)
+
+# Predict and evaluate
+pred_combined <- predict(combined_model, test_data_combined, type = "response")
+pred_bin_combined <- ifelse(pred_combined > 0.5, 1, 0)
+
+# Confusion matrix
+conf_matrix_combined <- table(Predicted = pred_bin_combined, Actual = test_data_combined$bclass)
+cat("Confusion Matrix (Combined Model):\n")
+print(conf_matrix_combined)
+
+# Calculate AUC
+auc_combined <- roc(test_data_combined$bclass, pred_combined)$auc
+cat("AUC for Question 2 (Combined Model):", auc_combined, "\n")
+```
+
