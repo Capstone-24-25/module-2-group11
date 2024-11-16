@@ -131,7 +131,7 @@ pred_test_wo <- predict(model_wo, X_test_pca_wo, type = "response")
 pred_bin_test_wo <- ifelse(pred_test_wo > 0.5, 1, 0)
 conf_matrix_test_wo <- table(Predicted = pred_bin_test_wo, Actual = X_test_pca_wo$bclass)
 auc_test_wo <- roc(X_test_pca_wo$bclass, pred_test_wo, levels = c(0, 1), direction = "<")$auc
-auc_test_wo
+auc_test_wo ## 0.7473
 ```
 
 ```{r}
@@ -246,7 +246,7 @@ pred_test <- predict(model, X_test_pca, type = "response")
 pred_bin_test <- ifelse(pred_test > 0.5, 1, 0)
 conf_matrix_test <- table(Predicted = pred_bin_test, Actual = X_test_pca$bclass)
 auc_test <- roc(X_test_pca$bclass, pred_test, levels = c(0, 1), direction = "<")$auc
-auc_test
+auc_test ## 0.7345
 ```
 
 ### Bigrams
