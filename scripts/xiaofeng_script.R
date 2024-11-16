@@ -1,10 +1,12 @@
 require(tidyverse)
+library(tidymodels)
 require(tidytext)
 require(textstem)
 require(rvest)
 require(qdapRegex)
 require(stopwords)
 require(tokenizers)
+library(pROC)
 
 # function to parse html and clean text
 parse_fn <- function(.html){
@@ -58,42 +60,62 @@ nlp_fn <- function(parse_data.out){
 
 load("./data/claims-raw.RData")
 
+# will take a couple minutes
 claims_clean <- claims_raw %>%
   parse_data()
 
-# PCA
-library(caret)
-X <- claims_clean %>%
-  select(-bclass) %>%
-  as.data.frame()
+## PCA
+claims_nlp <- nlp_fn(claims_clean)
 
-y <- claims_clean$bclass
+set.seed(123)
+data_split <- initial_split(claims_nlp, prop = 0.7, strata = bclass)
+train_data <- training(data_split)
+test_data <- testing(data_split)
 
-# Standardize the features (important for PCA)
-X_scaled <- scale(X)
+X_train_tfidf <- train_data %>% 
+  select(-c(.id, bclass)) %>% # exclude non-numeric column
+  as.matrix() %>% 
+  na.omit()
+X_test_tfidf <- test_data %>% 
+  select(-c(.id, bclass)) %>% 
+  as.matrix() %>% 
+  na.omit()
 
-# Perform PCA
-pca <- prcomp(X, center = TRUE, scale. = TRUE)
+common_columns <- intersect(colnames(X_train_tfidf), colnames(X_test_tfidf))
+X_train_tfidf <- X_train_tfidf[, common_columns]
+X_test_tfidf <- X_test_tfidf[, common_columns]
 
-# Check the variance explained by each principal component
-summary(pca)
+train_data$bclass <- factor(train_data$bclass, levels = c("N/A: No relevant content.", "Relevant claim content"))
+train_data$bclass <- as.numeric(train_data$bclass) - 1  # Convert to 0 and 1
 
-# Use the first few principal components that explain most of the variance
-# Choose how many components you want to keep, e.g., 5
-X_pca <- data.frame(pca$x[, 1:5])
+test_data$bclass <- factor(test_data$bclass, levels = c("N/A: No relevant content.", "Relevant claim content"))
+test_data$bclass <- as.numeric(test_data$bclass) - 1 
 
-# Train a logistic regression model using the first 5 principal components
-model <- glm(y ~ ., data = X_pca, family = binomial)
+# training data
+X_train_scaled <- X_train_tfidf[, apply(X_train_tfidf, 2, var) != 0]
 
-# Summary of the model
+# PCA transformation
+pca <- prcomp(X_train_scaled, center = T, scale. = T)
+
+# Calculate cumulative variance and select the number of components
+explained_variance <- summary(pca)$importance[2, ]
+cumulative_variance <- cumsum(explained_variance)
+num_components <- which(cumulative_variance >= 0.90)[1]
+
+X_train_pca <- data.frame(pca$x[, 1:num_components])
+X_train_pca$bclass <- train_data$bclass
+
+# will take a couple minutes
+model <- glm(bclass ~ ., data = X_train_pca, family = binomial)
 summary(model)
 
-# Make predictions
-pred <- predict(model, X_pca, type = "response")
+# also apply PCA on testing
+X_test_pca <- predict(pca, X_test_tfidf)[, 1:num_components]
+X_test_pca <- data.frame(X_test_pca)
+X_test_pca$bclass <- test_data$bclass
 
-# Convert predictions to binary outcome (if predicted probability > 0.5, classify as 1, else 0)
-pred_bin <- ifelse(pred > 0.5, 1, 0)
+pred_test <- predict(model, X_test_pca, type = "response")
+pred_bin_test <- ifelse(pred_test > 0.5, 1, 0)
+conf_matrix_test <- table(Predicted = pred_bin_test, Actual = X_test_pca$bclass)
+auc_test <- roc(X_test_pca$bclass, pred_test, levels = c(0, 1), direction = "<")$auc
 
-# Evaluate the model performance (e.g., using confusion matrix)
-conf_matrix <- table(Predicted = pred_bin, Actual = y)
-conf_matrix
