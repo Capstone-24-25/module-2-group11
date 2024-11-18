@@ -19,7 +19,9 @@ save(claims_clean, file = 'data/claims-clean-example.RData')
 library(tidyverse)
 library(tidymodels)
 library(keras)
+
 library(tensorflow)
+
 
 # load cleaned data
 load('data/claims-clean-example.RData')
