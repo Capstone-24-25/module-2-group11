@@ -131,6 +131,10 @@ history <- model %>%
 
 evaluate(model, x_test, y_test)
 
+# save model
+setwd('~/Desktop/PSTAT197/module-2-group11/results')
+save_model(model, 'bclass_model.keras')
+
 
 # validation accuracy gets stuck around 0.8 for traditional CNN
 
@@ -287,6 +291,9 @@ history <- model_mclass %>%
 
 evaluate(model_mclass, x_test_mclass, y_test_mclass)
 
+setwd('~/Desktop/PSTAT197/module-2-group11/results')
+save_model(model_mclass, 'mclass_model.keras')
+
 
 # try SVM
 
@@ -334,4 +341,5 @@ model_svm_radial_mclass <- svm(y_train_mclass ~ .,
 y_pred_radial_mclass <- predict(model_svm_radial_mclass, newdata = x_test_mclass)
 cm_radial_mclass <- table(y_test_mclass, y_pred_radial_mclass)
 accuracy_radial_mclass <- (cm_radial_mclass[1] + cm_radial_mclass[4]) / sum(cm_radial_mclass)
+
 
