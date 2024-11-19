@@ -1,5 +1,3 @@
-######### binary classification
-
 # packages
 library(tidyverse)
 library(tidymodels)
@@ -11,25 +9,17 @@ library(stopwords)
 library(e1071)
 library(textstem)
 
-nlp_fn <- function(parse_data.out){
-  out <- parse_data.out %>% 
-    unnest_tokens(output = token, 
-                  input = text_clean, 
-                  token = 'words',
-                  stopwords = str_remove_all(stop_words$word, 
-                                             '[[:punct:]]')) %>%
-    mutate(token.lem = lemmatize_words(token)) %>%
-    filter(str_length(token.lem) > 2) %>%
-    count(.id, bclass, token.lem, name = 'n') %>%
-    bind_tf_idf(term = token.lem, 
-                document = .id,
-                n = n) %>%
-    pivot_wider(id_cols = c('.id', 'bclass'),
-                names_from = 'token.lem',
-                values_from = 'tf_idf',
-                values_fill = 0)
-  return(out)
-}
+setwd('~/Desktop/PSTAT197/module-2-group11/scripts')
+source('preprocessing.R')
+
+setwd('~/Desktop/PSTAT197/module-2-group11/data')
+load('claims-test.RData')
+load('claims-raw.RData')
+load('claims-clean-example.RData')
+
+
+######### binary classification
+
 
 # create document term matrix
 claims_dtm <- nlp_fn(claims_clean)
