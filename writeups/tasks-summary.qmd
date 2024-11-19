@@ -1,10 +1,10 @@
 ---
 title: "Summary of exploratory tasks"
-author: 'YOUR NAMES HERE'
+author: 'Jiahui He, David Pan, Justin Lang, Xiaofeng Cai'
 date: today
 ---
 
-```{r}
+```{r, message = F}
 require(tidyverse)
 library(tidymodels)
 require(tidytext)
@@ -120,7 +120,6 @@ X_train_pca_wo$bclass <- train_data_wo$bclass
 
 # will take a couple minutes
 model_wo <- glm(bclass ~ ., data = X_train_pca_wo, family = binomial)
-summary(model_wo)
 
 # also apply PCA on testing
 X_test_pca_wo <- predict(pca_wo, X_test_tfidf_wo)[, 1:num_components_wo]
@@ -235,7 +234,6 @@ X_train_pca$bclass <- train_data$bclass
 
 # will take a couple minutes
 model <- glm(bclass ~ ., data = X_train_pca, family = binomial)
-summary(model)
 
 # also apply PCA on testing
 X_test_pca <- predict(pca, X_test_tfidf)[, 1:num_components]
