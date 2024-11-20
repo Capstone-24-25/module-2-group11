@@ -1,5 +1,13 @@
 ## this script contains functions for preprocessing
 ## claims data; intended to be sourced 
+require('tidyverse')
+require('tidytext')
+require('textstem')
+require('rvest')
+require('qdapRegex')
+require('stopwords')
+require('tokenizers')
+
 require(tidyverse)
 require(tidytext)
 require(textstem)
