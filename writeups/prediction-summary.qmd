@@ -1,6 +1,6 @@
 ---
 title: "Predictive modeling of claims status"
-author: "Jiahui He, David Pan, Justin Lang, Xiaofeng Cai"
+authors: 'Justin Lang, David Pan, Jiahui He, Xiaofeng Cai'
 date: today
 ---
 
@@ -8,7 +8,7 @@ date: today
 
 Provide a 3-5 sentence summary of your work on the primary task. Indicate what input data was used, what method was used for binary class predictions, what method was used for multiclass predictions, and what estimated accuracies were achieved.
 
-> *Header and paragraph content was scraped from the raw webpages and processed into term frequencies of word tokens. For binary classification, a two-layer neural network yielded an estimated 81.4% accuracy; for multiclass classification, a support vector machine gave 78% accuracy.*
+> *Header and paragraph content was scraped from the raw webpages and processed into term frequencies of word tokens. For binary classification, a two-layer neural network yielded an estimated 82.3% accuracy; for multiclass classification, a neural network machine gave 86.8% accuracy.*
 
 ### Preprocessing
 <!--
@@ -51,8 +51,7 @@ library(yardstick)
 library(pROC)
 
 ```
-```{r echo=FALSE }
-knitr::opts_chunk$set(message = FALSE)
+```{r echo=FALSE}
 setwd('~/code/pstat197a/module-2-group11/matrices')
 
 confusion_matrices <- list(
