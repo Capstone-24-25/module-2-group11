@@ -6,21 +6,18 @@ date: today
 
 ### HTML scraping
 
-Does including header content improve predictions? Answer the question and provide quantitative evidence supporting your answer.
+#### Task 1
+The goal was to determine whether incorporating header content, which often summarizes or highlights key information, could improve the predictive performance of a logistic principal component regression model. We modified the HTML scraping to include header tags (h1 through h6) alongside paragraph tags (p). Both header and paragraph content were preprocessed similarly to remove URLs, email addresses, punctuation, and other extraneous symbols, ensuring a clean and consistent text dataset. Then, we transformed data into numerical features using TF-IDF applied PCA and used logistic regression to predict whether the content was relevant. 
 
+#### Result 1
+Interestingly, including header content did not improve the predictive accuracy. Without headers, the model achieved an AUC of 0.7473, while with headers, the AUC dropped to 0.7345. The likely reason for this decline is that headers often contain non-specific or redundant information that introduces noise into the dataset. Future research could focus on selectively including specific types of headers, such as h1 or h2, which are more likely to provide relevant context. 
 
 ### Bigrams
 
-Do bigrams capture additional information relevant to the classification of interest? Answer the question, **briefly** describe what analysis you conducted to arrive at your answer, and provide quantitative evidence supporting your answer.
+#### Task 2
+We also want to know if bigrams capture additional information about the claims status of a page. To evaluate this, we conducted secondary tokenization to generate bigrams and applied a logistic principal component regression model on both word-tokenized and bigram-tokenized data. The predicted log-odds-ratios from the word-tokenized model were combined with the top 10 principal components of the bigram-tokenized data to fit a second logistic regression model to be used to classify the text. 
 
-### Neural net
+#### Result2
+The combined model, which incorporated bigram features, achieved an AUC of 0.5537, which is lower than the unigram-based model's AUC of 0.7402. This indicates that bigrams did not capture additional meaningful information for this classification task and may have introduced noise. Future analyses could explore weighted bigrams to determine if bigrams provide additional information.
 
-Summarize the neural network model you trained by desribing:
 
--   architecture
-
--   optimization and loss
-
--   training epochs
-
--   predictive accuracy
