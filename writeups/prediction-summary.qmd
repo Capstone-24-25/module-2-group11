@@ -1,6 +1,6 @@
 ---
 title: "Predictive modeling of claims status"
-author: 'YOUR NAMES HERE'
+authors: 'Justin Lang, David Pan, Jiahui He, Xiaofeng Cai'
 date: today
 ---
 
@@ -11,19 +11,19 @@ Provide a 3-5 sentence summary of your work on the primary task. Indicate what i
 > *Header and paragraph content was scraped from the raw webpages and processed into term frequencies of word tokens. For binary classification, a two-layer neural network yielded an estimated 81.4% accuracy; for multiclass classification, a support vector machine gave 78% accuracy.*
 
 ### Preprocessing
-
+<!--
 In one paragraph lay out your preprocessing pipeline. No need to provide exact step-by-step detail; just give an overview of the main components:
+-->
 
--   what text content was extracted from HTML
 
--   how text was cleaned
-
--   how cleaned text was represented quantitatively
+In our preprocessing pipeline, we extracted texts which belonged to paragraph elements or 'p' from the HTML. Then we cleaned the data by removing urls, emails, and replacing punctuation, digits and symbols with a space. This cleaned text was represented quantitatively via tf-idf or term frequency-inverse document frequency. This is calculated by determining how many times the word is used in a document (term frequency) and multiplying that by how common/rare the word is across all documents (inverse document frequency). This allowed us to represent the text quantitatively as how important the word is in each document.
 
 ### Methods
 
 Describe your final predictive models. Include one paragraph with details on the binary classification approach, and one on the multiclass approach. Include for each:
 
+
+In our binary 
 -   what ML/statistical method was used
 
 -   model specification and hyperparameter selection
@@ -33,5 +33,8 @@ Describe your final predictive models. Include one paragraph with details on the
 ### Results
 
 Indicate the predictive accuracy of the binary classifications and the multiclass classifications. Provide a table for each, and report sensitivity, specificity, and accuracy.[^1]
+
+
+
 
 [^1]: Read [this article](https://yardstick.tidymodels.org/articles/multiclass.html) on multiclass averaging.
