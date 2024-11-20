@@ -1,6 +1,6 @@
 ---
 title: "Predictive modeling of claims status"
-authors: 'Justin Lang, David Pan, Jiahui He, Xiaofeng Cai'
+author: "Jiahui He, David Pan, Justin Lang, Xiaofeng Cai"
 date: today
 ---
 

@@ -11,10 +11,10 @@ library(stopwords)
 library(e1071)
 library(textstem)
 
-setwd('~/code/pstat197a/module-2-group11/scripts')
+setwd('~/Desktop/PSTAT197/module-2-group11/scripts')
 source('preprocessing.R')
 
-setwd('~/code/pstat197a/module-2-group11/data')
+setwd('~/Desktop/PSTAT197/module-2-group11/data')
 load('claims-test.RData')
 load('claims-raw.RData')
 load('claims-clean-example.RData')
