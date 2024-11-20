@@ -1,8 +1,11 @@
-# Load necessary libraries
-library(tidyverse)
+require(tidyverse)
 library(tidymodels)
-library(tidytext)
-library(textstem)
+require(tidytext)
+require(textstem)
+require(rvest)
+require(qdapRegex)
+require(stopwords)
+require(tokenizers)
 library(pROC)
 
 # word-tokenized data (same as question1)
