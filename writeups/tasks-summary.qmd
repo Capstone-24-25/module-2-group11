@@ -1,6 +1,6 @@
 ---
 title: "Summary of exploratory tasks"
-author: 'Jiahui He, David Pan, Justin Lang, Xiaofeng Cai'
+author: "Jiahui He, David Pan, Justin Lang, Xiaofeng Cai"
 date: today
 ---
 
