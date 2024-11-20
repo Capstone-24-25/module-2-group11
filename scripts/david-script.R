@@ -1,35 +1,26 @@
-######### binary classification
-
 # packages
 library(tidyverse)
 library(tidymodels)
 library(tidytext)
+install_keras()
 library(keras3)
+install_tensorflow()
 library(tensorflow)
 library(tokenizers)
 library(stopwords)
 library(e1071)
 library(textstem)
 
-nlp_fn <- function(parse_data.out){
-  out <- parse_data.out %>% 
-    unnest_tokens(output = token, 
-                  input = text_clean, 
-                  token = 'words',
-                  stopwords = str_remove_all(stop_words$word, 
-                                             '[[:punct:]]')) %>%
-    mutate(token.lem = lemmatize_words(token)) %>%
-    filter(str_length(token.lem) > 2) %>%
-    count(.id, bclass, token.lem, name = 'n') %>%
-    bind_tf_idf(term = token.lem, 
-                document = .id,
-                n = n) %>%
-    pivot_wider(id_cols = c('.id', 'bclass'),
-                names_from = 'token.lem',
-                values_from = 'tf_idf',
-                values_fill = 0)
-  return(out)
-}
+setwd('~/code/pstat197a/module-2-group11/scripts')
+source('preprocessing.R')
+
+setwd('~/code/pstat197a/module-2-group11/data')
+load('claims-test.RData')
+load('claims-raw.RData')
+load('claims-clean-example.RData')
+
+######### binary classification
+
 
 # create document term matrix
 claims_dtm <- nlp_fn(claims_clean)
@@ -131,33 +122,48 @@ history <- model %>%
 
 evaluate(model, x_test, y_test)
 
+
+preds_clean <- predict(model, x_test) %>% 
+  as.numeric()
+class_labels <- claims_raw %>%
+  pull(bclass) %>%
+  levels()
+actual_classes <- factor(y_test, labels = class_labels)
+pred_classes_clean <- factor(preds_clean > 0.5, labels = class_labels)
+conf_matrix_clean <- table(pred_classes_clean, y_test)
+conf_matrix_clean
+sensitivity(conf_matrix_clean)
+specificity(conf_matrix_clean)
+accuracy(conf_matrix_clean)
+
+
 # save model
-setwd('~/Desktop/PSTAT197/module-2-group11/results')
-save_model(model, 'bclass_model.keras')
+setwd('~/code/pstat197a/module-2-group11/results')
+# save_model(model, 'bclass_model.keras')
 
 
 # validation accuracy gets stuck around 0.8 for traditional CNN
 
-# try RNN
-# architecture
-model_rnn <- keras_model_sequential(input_shape = ncol(x_train)) %>%
-  layer_embedding(input_dim = ncol(x_train), output_dim = 64) %>%
-  layer_gru(128, return_sequences = TRUE) %>%
-  layer_lstm(8) %>%
-  layer_dense(1)
-summary(model_rnn)
-
-# compile model
-model_rnn %>% compile(loss = 'binary_crossentropy',
-                  optimizer = 'adam',
-                  metrics = 'binary_accuracy')
-
-# train model
-history_rnn <- model_rnn %>%
-  fit(x = x_train,
-      y = y_train,
-      validation_split = 0.3,
-      epochs = 20)
+# # try RNN
+# # architecture
+# model_rnn <- keras_model_sequential(input_shape = ncol(x_train)) %>%
+#   layer_embedding(input_dim = ncol(x_train), output_dim = 64) %>%
+#   layer_gru(128, return_sequences = TRUE) %>%
+#   layer_lstm(8) %>%
+#   layer_dense(1)
+# summary(model_rnn)
+# 
+# # compile model
+# model_rnn %>% compile(loss = 'binary_crossentropy',
+#                   optimizer = 'adam',
+#                   metrics = 'binary_accuracy')
+# 
+# # train model
+# history_rnn <- model_rnn %>%
+#   fit(x = x_train,
+#       y = y_train,
+#       validation_split = 0.3,
+#       epochs = 20)
 
 
 # try SVM
@@ -291,8 +297,8 @@ history <- model_mclass %>%
 
 evaluate(model_mclass, x_test_mclass, y_test_mclass)
 
-setwd('~/Desktop/PSTAT197/module-2-group11/results')
-save_model(model_mclass, 'mclass_model.keras')
+setwd('~/code/pstat197a/module-2-group11/results')
+# save_model(model_mclass, 'mclass_model.keras')
 
 
 # try SVM

@@ -15,24 +15,95 @@ Provide a 3-5 sentence summary of your work on the primary task. Indicate what i
 In one paragraph lay out your preprocessing pipeline. No need to provide exact step-by-step detail; just give an overview of the main components:
 -->
 
-
 In our preprocessing pipeline, we extracted texts which belonged to paragraph elements or 'p' from the HTML. Then we cleaned the data by removing urls, emails, and replacing punctuation, digits and symbols with a space. This cleaned text was represented quantitatively via tf-idf or term frequency-inverse document frequency. This is calculated by determining how many times the word is used in a document (term frequency) and multiplying that by how common/rare the word is across all documents (inverse document frequency). This allowed us to represent the text quantitatively as how important the word is in each document.
 
 ### Methods
 
+<!--
 Describe your final predictive models. Include one paragraph with details on the binary classification approach, and one on the multiclass approach. Include for each:
+-->
 
 
-In our binary 
+Throughout both of our approaches,  we first passed it through preprocessing pipeline to work the data quantitatively. Then we partitioned the data into our testing and training data. Before separating into our features and target however, we took another step to take the top 1000 idf values of our partitioned data as the matrices are quite sparse.
+
+In the binary classification approach, we utilized neural networks and support vector machines (SVM). For neural networks, we used the keras functionality, and on the other hand, svm used four different kernel functions: linear, polynomial, sigmoid and radial.
+More specifically, in our neural network approach we had an input layer set with the total number of columns in our training data. Additionally, we declared 2 hidden layers with both activation functions being ReLU and our output layer with 1 neuron with a sigmoid activation function. Our hyper parameters set the loss functions as binary cross entropy, optimizer as adamax and metric as binary accuracy. SVM's parameters were set as C-classification as we are doing a classification problem and kernel type was set accordingly. As for our training methods, we set 80% of the data in neural network to be training and 20% for validation with a total of 20 epochs/passes through the training data.
+
+As for our multiclass approach, we again used neural networks and SVMs as our machine learning approaches. Our hyper parameters were extremely similar to our binary classification with the only difference being our output neurons increased from 1 to 5 and with a softmax function to adapt for 5 different classes as the output. Our hyper parameters mostly stayed the same as before (binary cross-entropy, adamax) but we changed our metric from binary accuracy to accuracy. SVM parameters were all set the same. Training methods were again set the same.
+
+
+<!--
 -   what ML/statistical method was used
 
 -   model specification and hyperparameter selection
 
 -   training method
+-->
 
 ### Results
 
+As mentioned above, we were able to partition the data into training and testing data, and after training the models, we can estimate the prediction accuracy for each model. Upon running the script 'predict_accuracy.R', it predicts the models upon our testing data which then creates and saves a confusion matrix under a folder for us to view. 
+
+The results are shown below with mclass denoting the multiclass classification and no-mclass denoting the binary classification. Linear, poly, sigmoid and radial denote the kernel functions used in the SVM model.
+```{r include = FALSE}
+library(caret)  
+library(yardstick)
+library(pROC)
+
+```
+```{r echo=FALSE }
+knitr::opts_chunk$set(message = FALSE)
+setwd('~/code/pstat197a/module-2-group11/matrices')
+
+confusion_matrices <- list(
+  "cm_binary_nn.RData",
+  "cm_linear.RData",
+  "cm_poly.RData",
+  "cm_sigmoid.RData",
+  "cm_radial.RData",
+  "cm_multi_nn.RData", 
+ "cm_linear_mclass.RData",
+   "cm_poly_mclass.RData", 
+ "cm_sigmoid_mclass.RData", 
+  "cm_radial_mclass.RData"
+)
+
+
+for (cm_info in confusion_matrices) {
+  load(cm_info)
+}
+
+confusion_matrices_data <- list(
+  cm_binary_nn,
+  cm_linear,
+  cm_poly,
+  cm_sigmoid,
+  cm_radial,
+  cm_multi_nn, 
+ cm_linear_mclass,
+   cm_poly_mclass, 
+ cm_sigmoid_mclass, 
+  cm_radial_mclass
+)
+cat("\n")
+for (i in seq_along(confusion_matrices_data)) {
+    cm_info <- confusion_matrices_data[[i]]
+    cm_name <- confusion_matrices[[i]]
+    
+    cat("For Model:", cm_name, "\n")
+    
+    print(cm_info)
+    
+    cat("Sensitivity:", sensitivity(cm_info)$.estimate, "\n")
+    cat("Specificity:", specificity(cm_info)$.estimate, "\n")
+    cat("Accuracy:", accuracy(cm_info)$.estimate, "\n")
+    cat("--------------------------------------- \n")
+}
+```
+
+<!---
 Indicate the predictive accuracy of the binary classifications and the multiclass classifications. Provide a table for each, and report sensitivity, specificity, and accuracy.[^1]
+--->
 
 
 

@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-11-19">
+<meta name="dcterms.date" content="2024-11-20">
 
 <title>Predictive modeling of claims status</title>
 <style>
@@ -63,7 +63,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 19, 2024</p>
+      <p class="date">November 20, 2024</p>
     </div>
   </div>
   
@@ -91,25 +91,230 @@ In one paragraph lay out your preprocessing pipeline. No need to provide exact s
 </section>
 <section id="methods" class="level3">
 <h3 class="anchored" data-anchor-id="methods">Methods</h3>
-<p>Describe your final predictive models. Include one paragraph with details on the binary classification approach, and one on the multiclass approach. Include for each:</p>
-<p>In our binary - what ML/statistical method was used</p>
-<ul>
-<li><p>model specification and hyperparameter selection</p></li>
-<li><p>training method</p></li>
-</ul>
+<!--
+Describe your final predictive models. Include one paragraph with details on the binary classification approach, and one on the multiclass approach. Include for each:
+-->
+<p>Throughout both of our approaches, we first passed it through preprocessing pipeline to work the data quantitatively. Then we partitioned the data into our testing and training data. Before separating into our features and target however, we took another step to take the top 1000 idf values of our partitioned data as the matrices are quite sparse.</p>
+<p>In the binary classification approach, we utilized neural networks and support vector machines (SVM). For neural networks, we used the keras functionality, and on the other hand, svm used four different kernel functions: linear, polynomial, sigmoid and radial. More specifically, in our neural network approach we had an input layer set with the total number of columns in our training data. Additionally, we declared 2 hidden layers with both activation functions being ReLU and our output layer with 1 neuron with a sigmoid activation function. Our hyper parameters set the loss functions as binary cross entropy, optimizer as adamax and metric as binary accuracy. SVM’s parameters were set as C-classification as we are doing a classification problem and kernel type was set accordingly. As for our training methods, we set 80% of the data in neural network to be training and 20% for validation with a total of 20 epochs/passes through the training data.</p>
+<p>As for our multiclass approach, we again used neural networks and SVMs as our machine learning approaches. Our hyper parameters were extremely similar to our binary classification with the only difference being our output neurons increased from 1 to 5 and with a softmax function to adapt for 5 different classes as the output. Our hyper parameters mostly stayed the same as before (binary cross-entropy, adamax) but we changed our metric from binary accuracy to accuracy. SVM parameters were all set the same. Training methods were again set the same.</p>
+<!--
+-   what ML/statistical method was used
+
+-   model specification and hyperparameter selection
+
+-   training method
+-->
 </section>
 <section id="results" class="level3">
 <h3 class="anchored" data-anchor-id="results">Results</h3>
-<p>Indicate the predictive accuracy of the binary classifications and the multiclass classifications. Provide a table for each, and report sensitivity, specificity, and accuracy.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>As mentioned above, we were able to partition the data into training and testing data, and after training the models, we can estimate the prediction accuracy for each model. Upon running the script ‘predict_accuracy.R’, it predicts the models upon our testing data which then creates and saves a confusion matrix under a folder for us to view.</p>
+<p>The results are shown below with mclass denoting the multiclass classification and no-mclass denoting the binary classification. Linear, poly, sigmoid and radial denote the kernel functions used in the SVM model.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>For Model: cm_binary_nn.RData 
+                           actual_classes
+pred_classes_binary         N/A: No relevant content. Relevant claim content
+  N/A: No relevant content.                       158                     35
+  Relevant claim content                           35                    167
+Sensitivity: 0.8186528 
+Specificity: 0.8267327 
+Accuracy: 0.8227848 
+--------------------------------------- 
+For Model: cm_linear.RData 
+      y_pred_linear
+y_test   0   1
+     0 126  67
+     1  40 162
+Sensitivity: 0.7590361 
+Specificity: 0.7074236 
+Accuracy: 0.7291139 
+--------------------------------------- 
+For Model: cm_poly.RData 
+      y_pred_poly
+y_test   0   1
+     0  42 151
+     1   4 198
+Sensitivity: 0.9130435 
+Specificity: 0.5673352 
+Accuracy: 0.6075949 
+--------------------------------------- 
+For Model: cm_sigmoid.RData 
+      y_pred_sigmoid
+y_test   0   1
+     0 155  38
+     1  39 163
+Sensitivity: 0.7989691 
+Specificity: 0.8109453 
+Accuracy: 0.8050633 
+--------------------------------------- 
+For Model: cm_radial.RData 
+      y_pred_radial
+y_test   0   1
+     0 154  39
+     1  41 161
+Sensitivity: 0.7897436 
+Specificity: 0.805 
+Accuracy: 0.7974684 
+--------------------------------------- 
+For Model: cm_multi_nn.RData 
+                               actual_classes_multi
+pred_classes_multi              N/A: No relevant content. Physical Activity
+  N/A: No relevant content.                           154                 6
+  Physical Activity                                     4                37
+  Possible Fatality                                    16                 0
+  Potentially unlawful activity                         6                 0
+  Other claim content                                   3                 0
+                               actual_classes_multi
+pred_classes_multi              Possible Fatality Potentially unlawful activity
+  N/A: No relevant content.                     5                             4
+  Physical Activity                             0                             0
+  Possible Fatality                            87                             0
+  Potentially unlawful activity                 0                            50
+  Other claim content                           2                             1
+                               actual_classes_multi
+pred_classes_multi              Other claim content
+  N/A: No relevant content.                       5
+  Physical Activity                               0
+  Possible Fatality                               0
+  Potentially unlawful activity                   0
+  Other claim content                            15
+Sensitivity: 0.8573236 
+Specificity: 0.9614987 
+Accuracy: 0.8683544 
+--------------------------------------- 
+For Model: cm_linear_mclass.RData 
+             y_pred_linear_mclass
+y_test_mclass   0   1   2   3   4
+            0 156   8  13   6   0
+            1  17  26   0   0   0
+            2  33   0  61   0   0
+            3  17   0   0  38   0
+            4  20   0   0   0   0</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: While computing multiclass `sens()`, some levels had no true events (i.e.
+`true_positive + false_negative = 0`).
+Sensitivity is undefined in this case, and those levels will be removed from
+the averaged result.
+Note that the following number of predicted events actually occurred for each
+problematic event level:
+'4': 20</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Sensitivity: 0.7736605 
+Specificity: 0.9146815 
+Accuracy: 0.7113924 
+--------------------------------------- 
+For Model: cm_poly_mclass.RData 
+             y_pred_poly_mclass
+y_test_mclass   0   1   2   3   4
+            0 183   0   0   0   0
+            1  43   0   0   0   0
+            2  94   0   0   0   0
+            3  55   0   0   0   0
+            4  20   0   0   0   0</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: While computing multiclass `sens()`, some levels had no true events (i.e.
+`true_positive + false_negative = 0`).
+Sensitivity is undefined in this case, and those levels will be removed from
+the averaged result.
+Note that the following number of predicted events actually occurred for each
+problematic event level:
+'1': 43, '2': 94, '3': 55, '4': 20</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Sensitivity: 0.4632911 </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: While computing multiclass `spec()`, some levels had no true negatives (i.e.
+`true_negative + false_positive = 0`).
+Specificity is undefined in this case, and those levels will be removed from
+the averaged result.
+Note that the following number of predicted negatives actually occurred for
+each problematic event level:
+'0': 212</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Specificity: 0.8658228 
+Accuracy: 0.4632911 
+--------------------------------------- 
+For Model: cm_sigmoid_mclass.RData 
+             y_pred_sigmoid_mclass
+y_test_mclass   0   1   2   3   4
+            0 183   0   0   0   0
+            1  43   0   0   0   0
+            2  94   0   0   0   0
+            3  55   0   0   0   0
+            4  20   0   0   0   0</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: While computing multiclass `sens()`, some levels had no true events (i.e.
+`true_positive + false_negative = 0`).
+Sensitivity is undefined in this case, and those levels will be removed from
+the averaged result.
+Note that the following number of predicted events actually occurred for each
+problematic event level:
+'1': 43, '2': 94, '3': 55, '4': 20</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Sensitivity: 0.4632911 </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: While computing multiclass `spec()`, some levels had no true negatives (i.e.
+`true_negative + false_positive = 0`).
+Specificity is undefined in this case, and those levels will be removed from
+the averaged result.
+Note that the following number of predicted negatives actually occurred for
+each problematic event level:
+'0': 212</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Specificity: 0.8658228 
+Accuracy: 0.4632911 
+--------------------------------------- 
+For Model: cm_radial_mclass.RData 
+             y_pred_radial_mclass
+y_test_mclass   0   1   2   3   4
+            0 183   0   0   0   0
+            1  43   0   0   0   0
+            2  94   0   0   0   0
+            3  55   0   0   0   0
+            4  20   0   0   0   0</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: While computing multiclass `sens()`, some levels had no true events (i.e.
+`true_positive + false_negative = 0`).
+Sensitivity is undefined in this case, and those levels will be removed from
+the averaged result.
+Note that the following number of predicted events actually occurred for each
+problematic event level:
+'1': 43, '2': 94, '3': 55, '4': 20</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Sensitivity: 0.4632911 </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: While computing multiclass `spec()`, some levels had no true negatives (i.e.
+`true_negative + false_positive = 0`).
+Specificity is undefined in this case, and those levels will be removed from
+the averaged result.
+Note that the following number of predicted negatives actually occurred for
+each problematic event level:
+'0': 212</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Specificity: 0.8658228 
+Accuracy: 0.4632911 
+--------------------------------------- </code></pre>
+</div>
+</div>
+<!---
+Indicate the predictive accuracy of the binary classifications and the multiclass classifications. Provide a table for each, and report sensitivity, specificity, and accuracy.[^1]
+--->
 </section>
 
-
-<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
-
-<ol>
-<li id="fn1"><p>Read <a href="https://yardstick.tidymodels.org/articles/multiclass.html">this article</a> on multiclass averaging.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section></div></main>
+</main>
 <!-- /main column -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
