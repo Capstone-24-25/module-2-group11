@@ -200,6 +200,7 @@ model_svm_linear_mclass <- svm(y_train_mclass ~ .,
 
 y_pred_linear_mclass <- predict(model_svm_linear_mclass, newdata = x_test_mclass)
 cm_linear_mclass <- table(y_test_mclass, y_pred_linear_mclass)
+
 # accuracy_linear_mclass <- accuracy(cm_linear_mclass)
 
 
@@ -237,6 +238,7 @@ cm_linear_mclass <- table(y_test_mclass, y_pred_linear_mclass)
 # y_pred_radial_mclass <- predict(model_svm_radial_mclass, newdata = x_test_mclass)
 # cm_radial_mclass <- table(y_test_mclass, y_pred_radial_mclass)
 # # accuracy_radial_mclass <- accuracy(cm_radial_mclass)
+
 
 # Create 'matrices' directory if it doesn't exist
 if (!dir.exists("../matrices")) {

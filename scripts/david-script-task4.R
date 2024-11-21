@@ -297,7 +297,7 @@ model_svm_linear_mclass <- svm(y_train_mclass ~ .,
 
 y_pred_linear_mclass <- predict(model_svm_linear_mclass, newdata = x_test_mclass)
 cm_linear_mclass <- table(y_test_mclass, y_pred_linear_mclass)
-accuracy_linear_mclass <- (cm_linear_mclass[1] + cm_linear_mclass[4]) / sum(cm_linear_mclass)
+accuracy_linear_mclass <- accuracy(cm_linear_mclass)
 
 
 # polynomial kernel
@@ -308,7 +308,7 @@ model_svm_poly_mclass <- svm(y_train_mclass ~ .,
 
 y_pred_poly_mclass <- predict(model_svm_poly_mclass, newdata = x_test_mclass)
 cm_poly_mclass <- table(y_test_mclass, y_pred_poly_mclass)
-accuracy_poly_mclass <- (cm_poly_mclass[1] + cm_poly_mclass[4]) / sum(cm_poly_mclass)
+accuracy_poly_mclass <- accuracy(cm_poly_mclass)
 
 
 # sigmoid kernel
@@ -319,7 +319,7 @@ model_svm_sigmoid_mclass <- svm(y_train_mclass ~ .,
 
 y_pred_sigmoid_mclass <- predict(model_svm_sigmoid_mclass, newdata = x_test_mclass)
 cm_sigmoid_mclass <- table(y_test_mclass, y_pred_sigmoid_mclass)
-accuracy_sigmoid_mclass <- (cm_sigmoid_mclass[1] + cm_sigmoid_mclass[4]) / sum(cm_sigmoid_mclass)
+accuracy_sigmoid_mclass <- accuracy(cm_sigmoid_mclass)
 
 
 # radial kernel
@@ -330,6 +330,6 @@ model_svm_radial_mclass <- svm(y_train_mclass ~ .,
 
 y_pred_radial_mclass <- predict(model_svm_radial_mclass, newdata = x_test_mclass)
 cm_radial_mclass <- table(y_test_mclass, y_pred_radial_mclass)
-accuracy_radial_mclass <- (cm_radial_mclass[1] + cm_radial_mclass[4]) / sum(cm_radial_mclass)
+accuracy_radial_mclass <- accuracy(cm_radial_mclass)
 
 
