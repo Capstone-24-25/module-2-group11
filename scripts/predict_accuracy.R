@@ -1,14 +1,11 @@
-setwd('~/code/pstat197a/module-2-group11/scripts')
-source('preprocessing.R')
+source('scripts/preprocessing.R')
 
-setwd('~/code/pstat197a/module-2-group11/data')
-load('claims-test.RData')
-load('claims-raw.RData')
-load('claims-clean-example.RData')
+load('data/claims-test.RData')
+load('data/claims-raw.RData')
+load('data/claims-clean-example.RData')
 
-setwd("~/code/pstat197a/module-2-group11/results")
-bclass_model <- load_model("bclass_model.keras")
-mclass_model <- load_model("mclass_model.keras")
+bclass_model <- load_model("results/bclass_model.keras")
+mclass_model <- load_model("results/mclass_model.keras")
 
 ####################################### BINARY CLASSIFICATION
 
@@ -192,9 +189,9 @@ for (i in 1:iterate) {
 actual_classes_multi <- factor(y_test_mclass, labels = class_labels_multi)
 cm_multi_nn <- table(pred_classes_multi, actual_classes_multi)
 
-
 # linear kernel
 xy_train_mclass <- cbind(y_train_mclass, x_train_mclass)
+str(xy_train_mclass)
 
 model_svm_linear_mclass <- svm(y_train_mclass ~ .,
                                data = xy_train_mclass,
@@ -203,40 +200,45 @@ model_svm_linear_mclass <- svm(y_train_mclass ~ .,
 
 y_pred_linear_mclass <- predict(model_svm_linear_mclass, newdata = x_test_mclass)
 cm_linear_mclass <- table(y_test_mclass, y_pred_linear_mclass)
-accuracy_linear_mclass <- accuracy(cm_linear_mclass)
+
+# accuracy_linear_mclass <- accuracy(cm_linear_mclass)
 
 
-# polynomial kernel
-model_svm_poly_mclass <- svm(y_train_mclass ~ .,
-                             data = xy_train_mclass,
-                             type = 'C-classification',
-                             kernel = 'polynomial')
+# # polynomial kernel
+# xy_train_mclass <- cbind(y_train_mclass, x_train_mclass)
+# str(xy_train_mclass)
+# model_svm_poly_mclass <- svm(y_train_mclass ~ .,
+#                              data = xy_train_mclass,
+#                              type = 'C-classification',
+#                              kernel = 'polynomial')
+# 
+# y_pred_poly_mclass <- predict(model_svm_poly_mclass, newdata = x_test_mclass)
+# cm_poly_mclass <- table(y_test_mclass, y_pred_poly_mclass)
+# cm_poly_mclass
+# # accuracy_poly_mclass <- accuracy(cm_poly_mclass)
+# 
+# 
+# # sigmoid kernel
+# model_svm_sigmoid_mclass <- svm(y_train_mclass ~ .,
+#                                 data = xy_train_mclass,
+#                                 type = 'C-classification',
+#                                 kernel = 'sigmoid')
+# 
+# y_pred_sigmoid_mclass <- predict(model_svm_sigmoid_mclass, newdata = x_test_mclass)
+# cm_sigmoid_mclass <- table(y_test_mclass, y_pred_sigmoid_mclass)
+# # accuracy_sigmoid_mclass <- accuracy(cm_sigmoid_mclass)
+# 
+# 
+# # radial kernel
+# model_svm_radial_mclass <- svm(y_train_mclass ~ .,
+#                                data = xy_train_mclass,
+#                                type = 'C-classification',
+#                                kernel = 'radial')
+# 
+# y_pred_radial_mclass <- predict(model_svm_radial_mclass, newdata = x_test_mclass)
+# cm_radial_mclass <- table(y_test_mclass, y_pred_radial_mclass)
+# # accuracy_radial_mclass <- accuracy(cm_radial_mclass)
 
-y_pred_poly_mclass <- predict(model_svm_poly_mclass, newdata = x_test_mclass)
-cm_poly_mclass <- table(y_test_mclass, y_pred_poly_mclass)
-accuracy_poly_mclass <- accuracy(cm_poly_mclass)
-
-
-# sigmoid kernel
-model_svm_sigmoid_mclass <- svm(y_train_mclass ~ .,
-                                data = xy_train_mclass,
-                                type = 'C-classification',
-                                kernel = 'sigmoid')
-
-y_pred_sigmoid_mclass <- predict(model_svm_sigmoid_mclass, newdata = x_test_mclass)
-cm_sigmoid_mclass <- table(y_test_mclass, y_pred_sigmoid_mclass)
-accuracy_sigmoid_mclass <- accuracy(cm_sigmoid_mclass)
-
-
-# radial kernel
-model_svm_radial_mclass <- svm(y_train_mclass ~ .,
-                               data = xy_train_mclass,
-                               type = 'C-classification',
-                               kernel = 'radial')
-
-y_pred_radial_mclass <- predict(model_svm_radial_mclass, newdata = x_test_mclass)
-cm_radial_mclass <- table(y_test_mclass, y_pred_radial_mclass)
-accuracy_radial_mclass <- accuracy(cm_radial_mclass)
 
 # Create 'matrices' directory if it doesn't exist
 if (!dir.exists("../matrices")) {
@@ -244,17 +246,16 @@ if (!dir.exists("../matrices")) {
 }
 
 # Save confusion matrices to the 'matrices' folder
-setwd('~/code/pstat197a/module-2-group11/data')
-save(cm_binary_nn, file = "../matrices/cm_binary_nn.RData")
-save(cm_linear, file = "../matrices/cm_linear.RData")
-save(cm_poly, file = "../matrices/cm_poly.RData")
-save(cm_sigmoid, file = "../matrices/cm_sigmoid.RData")
-save(cm_radial, file = "../matrices/cm_radial.RData")
-save(cm_multi_nn, file = "../matrices/cm_multi_nn.RData")
-save(cm_linear_mclass, file = "../matrices/cm_linear_mclass.RData")
-save(cm_poly_mclass, file = "../matrices/cm_poly_mclass.RData")
-save(cm_sigmoid_mclass, file = "../matrices/cm_sigmoid_mclass.RData")
-save(cm_radial_mclass, file = "../matrices/cm_radial_mclass.RData")
+save(cm_binary_nn, file = "matrices/cm_binary_nn.RData")
+save(cm_linear, file = "matrices/cm_linear.RData")
+save(cm_poly, file = "matrices/cm_poly.RData")
+save(cm_sigmoid, file = "matrices/cm_sigmoid.RData")
+save(cm_radial, file = "matrices/cm_radial.RData")
+save(cm_multi_nn, file = "matrices/cm_multi_nn.RData")
+save(cm_linear_mclass, file = "matrices/cm_linear_mclass.RData")
+# save(cm_poly_mclass, file = "matrices/cm_poly_mclass.RData")
+# save(cm_sigmoid_mclass, file = "matrices/cm_sigmoid_mclass.RData")
+# save(cm_radial_mclass, file = "matrices/cm_radial_mclass.RData")
 
 # Binary Accuracy Values
 print("----Binary Neural Network Accuracy Values----")
@@ -263,7 +264,6 @@ specificity(cm_binary_nn)
 accuracy(cm_binary_nn)
 print("---------------------------------------------")
 
-# Multiclass  Accuracy Values
 ## SVM
 print("----Binary SVM Linear Accuracy Values----")
 sensitivity(cm_linear)
@@ -288,11 +288,13 @@ sensitivity(cm_radial)
 specificity(cm_radial)
 accuracy(cm_radial)
 print("---------------------------------------------")
+
+# Multi class accuracy values 
 ## Neural Network
 print("----Multiclass Neural Network Accuracy Values----")
-sensitivity(conf_matrix_multi)
-specificity(conf_matrix_multi)
-accuracy(conf_matrix_multi)
+sensitivity(cm_multi_nn)
+specificity(cm_multi_nn)
+accuracy(cm_multi_nn)
 print("---------------------------------------------")
 
 ## SVM
@@ -302,20 +304,20 @@ specificity(cm_linear_mclass)
 accuracy(cm_linear_mclass)
 print("---------------------------------------------")
 
-print("----Multiclass SVM Polynomial Accuracy Values----")
-sensitivity(cm_poly_mclass)
-specificity(cm_poly_mclass)
-accuracy(cm_poly_mclass)
-print("---------------------------------------------")
-
-print("----Multiclass SVM Sigmoid Accuracy Values----")
-sensitivity(cm_sigmoid_mclass)
-specificity(cm_sigmoid_mclass)
-accuracy(cm_sigmoid_mclass)
-print("---------------------------------------------")
-
-print("----Multiclass SVM Radial Accuracy Values----")
-sensitivity(cm_radial_mclass)
-specificity(cm_radial_mclass)
-accuracy(cm_radial_mclass)
-print("---------------------------------------------")
+# print("----Multiclass SVM Polynomial Accuracy Values----")
+# sensitivity(cm_poly_mclass)
+# specificity(cm_poly_mclass)
+# accuracy(cm_poly_mclass)
+# print("---------------------------------------------")
+# 
+# print("----Multiclass SVM Sigmoid Accuracy Values----")
+# sensitivity(cm_sigmoid_mclass)
+# specificity(cm_sigmoid_mclass)
+# accuracy(cm_sigmoid_mclass)
+# print("---------------------------------------------")
+# 
+# print("----Multiclass SVM Radial Accuracy Values----")
+# sensitivity(cm_radial_mclass)
+# specificity(cm_radial_mclass)
+# accuracy(cm_radial_mclass)
+# print("---------------------------------------------")
